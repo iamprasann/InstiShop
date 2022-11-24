@@ -17,8 +17,8 @@ contract InstiShop {
     uint256 itemCount;
     mapping(uint256 => Item) public idToItem;
 
-    event ItemAdded(address indexed owner, Item post);
-    event ItemOwnershipChanged(address indexed owner, Item indexed item);
+    event ItemAdded(address indexed owner, uint256 indexed id);
+    event ItemOwnershipTransferred(address indexed owner, uint256 indexed id);
 
     function addItem(
         string memory name,
@@ -41,7 +41,7 @@ contract InstiShop {
         );
         itemCount++;
         idToItem[itemCount] = item;
-        emit ItemAdded(msg.sender, item);
+        emit ItemAdded(msg.sender, itemCount);
     }
 
     function rentItem(uint256 id, uint256 daysToRent) external payable {
@@ -58,7 +58,7 @@ contract InstiShop {
         );
         item.renter = msg.sender;
         item.validTill = block.timestamp + daysToRent * 1 days;
-        emit ItemOwnershipChanged(msg.sender, item);
+        emit ItemOwnershipTransferred(msg.sender, id);
     }
 
     function returnItem(uint256 id) external {
@@ -74,7 +74,7 @@ contract InstiShop {
         );
         item.renter = address(0);
         item.validTill = 0;
-        emit ItemOwnershipChanged(item.owner, item);
+        emit ItemOwnershipTransferred(item.owner, id);
     }
 
     function buyItem(uint256 id) external payable {
@@ -87,7 +87,7 @@ contract InstiShop {
         require(item.renter == address(0), "Rental: Item is already rented");
         require(msg.value == item.buyPrice, "Rental: Incorrect payment amount");
         item.owner = msg.sender;
-        emit ItemOwnershipChanged(msg.sender, item);
+        emit ItemOwnershipTransferred(msg.sender, id);
     }
 
     function getItems() external view returns (Item[] memory) {
@@ -116,5 +116,25 @@ contract InstiShop {
             itemsByOwner[i] = items[i];
         }
         return itemsByOwner;
+    }
+
+    function getItemsByRenter(address renter)
+        external
+        view
+        returns (Item[] memory)
+    {
+        Item[] memory items = new Item[](itemCount);
+        uint256 count;
+        for (uint256 i = 0; i < itemCount; i++) {
+            if (idToItem[i + 1].renter == renter) {
+                items[count] = idToItem[i + 1];
+                count++;
+            }
+        }
+        Item[] memory itemsByRenter = new Item[](count);
+        for (uint256 i = 0; i < count; i++) {
+            itemsByRenter[i] = items[i];
+        }
+        return itemsByRenter;
     }
 }

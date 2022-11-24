@@ -70,6 +70,7 @@ export interface InstiShopInterface extends utils.Interface {
     "buyItem(uint256)": FunctionFragment;
     "getItems()": FunctionFragment;
     "getItemsByOwner(address)": FunctionFragment;
+    "getItemsByRenter(address)": FunctionFragment;
     "idToItem(uint256)": FunctionFragment;
     "rentItem(uint256,uint256)": FunctionFragment;
     "returnItem(uint256)": FunctionFragment;
@@ -81,6 +82,7 @@ export interface InstiShopInterface extends utils.Interface {
       | "buyItem"
       | "getItems"
       | "getItemsByOwner"
+      | "getItemsByRenter"
       | "idToItem"
       | "rentItem"
       | "returnItem"
@@ -107,6 +109,10 @@ export interface InstiShopInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getItemsByRenter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "idToItem",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -126,41 +132,45 @@ export interface InstiShopInterface extends utils.Interface {
     functionFragment: "getItemsByOwner",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getItemsByRenter",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "idToItem", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "rentItem", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "returnItem", data: BytesLike): Result;
 
   events: {
-    "ItemAdded(address,tuple)": EventFragment;
-    "ItemOwnershipChanged(address,tuple)": EventFragment;
+    "ItemAdded(address,uint256)": EventFragment;
+    "ItemOwnershipTransferred(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ItemAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ItemOwnershipChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ItemOwnershipTransferred"): EventFragment;
 }
 
 export interface ItemAddedEventObject {
   owner: string;
-  post: InstiShop.ItemStructOutput;
+  id: BigNumber;
 }
 export type ItemAddedEvent = TypedEvent<
-  [string, InstiShop.ItemStructOutput],
+  [string, BigNumber],
   ItemAddedEventObject
 >;
 
 export type ItemAddedEventFilter = TypedEventFilter<ItemAddedEvent>;
 
-export interface ItemOwnershipChangedEventObject {
+export interface ItemOwnershipTransferredEventObject {
   owner: string;
-  item: InstiShop.ItemStructOutput;
+  id: BigNumber;
 }
-export type ItemOwnershipChangedEvent = TypedEvent<
-  [string, InstiShop.ItemStructOutput],
-  ItemOwnershipChangedEventObject
+export type ItemOwnershipTransferredEvent = TypedEvent<
+  [string, BigNumber],
+  ItemOwnershipTransferredEventObject
 >;
 
-export type ItemOwnershipChangedEventFilter =
-  TypedEventFilter<ItemOwnershipChangedEvent>;
+export type ItemOwnershipTransferredEventFilter =
+  TypedEventFilter<ItemOwnershipTransferredEvent>;
 
 export interface InstiShop extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -210,6 +220,11 @@ export interface InstiShop extends BaseContract {
 
     getItemsByOwner(
       owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[InstiShop.ItemStructOutput[]]>;
+
+    getItemsByRenter(
+      renter: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[InstiShop.ItemStructOutput[]]>;
 
@@ -274,6 +289,11 @@ export interface InstiShop extends BaseContract {
     overrides?: CallOverrides
   ): Promise<InstiShop.ItemStructOutput[]>;
 
+  getItemsByRenter(
+    renter: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<InstiShop.ItemStructOutput[]>;
+
   idToItem(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -335,6 +355,11 @@ export interface InstiShop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<InstiShop.ItemStructOutput[]>;
 
+    getItemsByRenter(
+      renter: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<InstiShop.ItemStructOutput[]>;
+
     idToItem(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -375,23 +400,23 @@ export interface InstiShop extends BaseContract {
   };
 
   filters: {
-    "ItemAdded(address,tuple)"(
+    "ItemAdded(address,uint256)"(
       owner?: PromiseOrValue<string> | null,
-      post?: null
+      id?: PromiseOrValue<BigNumberish> | null
     ): ItemAddedEventFilter;
     ItemAdded(
       owner?: PromiseOrValue<string> | null,
-      post?: null
+      id?: PromiseOrValue<BigNumberish> | null
     ): ItemAddedEventFilter;
 
-    "ItemOwnershipChanged(address,tuple)"(
+    "ItemOwnershipTransferred(address,uint256)"(
       owner?: PromiseOrValue<string> | null,
-      item?: InstiShop.ItemStruct | null
-    ): ItemOwnershipChangedEventFilter;
-    ItemOwnershipChanged(
+      id?: PromiseOrValue<BigNumberish> | null
+    ): ItemOwnershipTransferredEventFilter;
+    ItemOwnershipTransferred(
       owner?: PromiseOrValue<string> | null,
-      item?: InstiShop.ItemStruct | null
-    ): ItemOwnershipChangedEventFilter;
+      id?: PromiseOrValue<BigNumberish> | null
+    ): ItemOwnershipTransferredEventFilter;
   };
 
   estimateGas: {
@@ -414,6 +439,11 @@ export interface InstiShop extends BaseContract {
 
     getItemsByOwner(
       owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getItemsByRenter(
+      renter: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -454,6 +484,11 @@ export interface InstiShop extends BaseContract {
 
     getItemsByOwner(
       owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getItemsByRenter(
+      renter: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

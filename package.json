@@ -10,7 +10,7 @@
     "compile": "hardhat compile",
     "types": "hardhat typechain",
     "test": "hardhat test --network hardhat",
-    "deploy": "hardhat deploy --network matic --export deployments.json",
+    "deploy": "hardhat deploy --network mumbai --export deployments.json",
     "verify": "hardhat verify"
   },
   "dependencies": {
@@ -41,7 +41,7 @@
     "hardhat-deploy": "^0.11.20",
     "hardhat-gas-reporter": "^1.0.9",
     "mocha": "^10.1.0",
-    "prettier": "^2.7.1",
+    "prettier": "^2.8.0",
     "prettier-plugin-solidity": "1.0.0",
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.8.2",

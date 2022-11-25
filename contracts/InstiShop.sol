@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 contract InstiShop {
     struct Item {
+        uint256 id;
         string name;
         string description;
         string media;
@@ -14,11 +15,15 @@ contract InstiShop {
         address renter;
     }
 
-    uint256 itemCount;
-    mapping(uint256 => Item) public idToItem;
+    Item[] public items;
 
     event ItemAdded(address indexed owner, uint256 indexed id);
     event ItemOwnershipTransferred(address indexed owner, uint256 indexed id);
+
+    modifier validId(uint256 id) {
+        require(id < items.length, "InstiShop: Item does not exist");
+        _;
+    }
 
     function addItem(
         string memory name,
@@ -29,6 +34,7 @@ contract InstiShop {
         uint256 buyPrice
     ) external {
         Item memory item = Item(
+            items.length,
             name,
             description,
             media,
@@ -39,102 +45,103 @@ contract InstiShop {
             0,
             address(0)
         );
-        itemCount++;
-        idToItem[itemCount] = item;
-        emit ItemAdded(msg.sender, itemCount);
+        items.push(item);
+        emit ItemAdded(msg.sender, item.id);
     }
 
-    function rentItem(uint256 id, uint256 daysToRent) external payable {
-        require(id < itemCount, "Rental: Item does not exist");
-        Item storage item = idToItem[id];
+    function rentItem(uint256 id, uint256 daysToRent)
+        external
+        payable
+        validId(id)
+    {
+        Item storage item = items[id];
         require(
             item.owner != msg.sender,
-            "Rental: You cannot rent your own item"
+            "InstiShop: You cannot rent your own item"
         );
-        require(item.renter == address(0), "Rental: Item is already rented");
+        require(item.renter == address(0), "InstiShop: Item is already rented");
         require(
             msg.value == item.rentPricePerDay * daysToRent,
-            "Rental: Incorrect payment amount"
+            "InstiShop: Incorrect payment amount"
         );
         item.renter = msg.sender;
         item.validTill = block.timestamp + daysToRent * 1 days;
+        payable(item.owner).transfer(msg.value);
         emit ItemOwnershipTransferred(msg.sender, id);
     }
 
-    function returnItem(uint256 id) external {
-        require(id < itemCount, "Rental: Item does not exist");
-        Item storage item = idToItem[id];
+    function returnItem(uint256 id) external validId(id) {
+        Item storage item = items[id];
         require(
             item.renter == msg.sender,
-            "Rental: You cannot return an item you do not own"
+            "InstiShop: You cannot return an item you do not own"
         );
         require(
             block.timestamp > item.validTill,
-            "Rental: Item is not yet due for return"
+            "InstiShop: Item is not yet due for return"
         );
         item.renter = address(0);
         item.validTill = 0;
         emit ItemOwnershipTransferred(item.owner, id);
     }
 
-    function buyItem(uint256 id) external payable {
-        require(id < itemCount, "Rental: Item does not exist");
-        Item storage item = idToItem[id];
+    function buyItem(uint256 id) external payable validId(id) {
+        Item storage item = items[id];
         require(
             item.owner != msg.sender,
-            "Rental: You cannot buy your own item"
+            "InstiShop: You cannot buy your own item"
         );
-        require(item.renter == address(0), "Rental: Item is already rented");
-        require(msg.value == item.buyPrice, "Rental: Incorrect payment amount");
+        require(item.renter == address(0), "InstiShop: Item is already rented");
+        require(
+            msg.value == item.buyPrice,
+            "InstiShop: Incorrect payment amount"
+        );
         item.owner = msg.sender;
+        payable(item.owner).transfer(msg.value);
         emit ItemOwnershipTransferred(msg.sender, id);
     }
 
     function getItems() external view returns (Item[] memory) {
-        Item[] memory items = new Item[](itemCount);
-        for (uint256 i = 0; i < itemCount; i++) {
-            items[i] = idToItem[i + 1];
-        }
         return items;
     }
 
     function getItemsByOwner(address owner)
         external
         view
-        returns (Item[] memory)
+        returns (Item[] memory ownerItems)
     {
-        Item[] memory items = new Item[](itemCount);
-        uint256 count;
-        for (uint256 i = 0; i < itemCount; i++) {
-            if (idToItem[i + 1].owner == owner) {
-                items[count] = idToItem[i + 1];
+        Item[] memory ownerItemsTemp = new Item[](items.length);
+        uint256 count = 0;
+        for (uint256 i = 0; i < items.length; i++) {
+            if (items[i].owner == owner) {
+                ownerItemsTemp[count] = items[i];
                 count++;
             }
         }
-        Item[] memory itemsByOwner = new Item[](count);
+
+        ownerItems = new Item[](count);
         for (uint256 i = 0; i < count; i++) {
-            itemsByOwner[i] = items[i];
+            ownerItems[i] = ownerItems[i];
         }
-        return itemsByOwner;
     }
 
     function getItemsByRenter(address renter)
         external
         view
-        returns (Item[] memory)
+        returns (Item[] memory renterItems)
     {
-        Item[] memory items = new Item[](itemCount);
-        uint256 count;
-        for (uint256 i = 0; i < itemCount; i++) {
-            if (idToItem[i + 1].renter == renter) {
-                items[count] = idToItem[i + 1];
+        Item[] memory renterItemsTemp = new Item[](items.length);
+        uint256 count = 0;
+        for (uint256 i = 0; i < items.length; i++) {
+            if (items[i].renter == renter) {
+                renterItemsTemp[count] = items[i];
                 count++;
             }
         }
-        Item[] memory itemsByRenter = new Item[](count);
+
+        renterItems = new Item[](count);
         for (uint256 i = 0; i < count; i++) {
-            itemsByRenter[i] = items[i];
+            renterItems[i] = renterItems[i];
         }
-        return itemsByRenter;
     }
 }

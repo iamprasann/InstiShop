@@ -30,6 +30,7 @@ import type {
 
 export declare namespace InstiShop {
   export type ItemStruct = {
+    id: PromiseOrValue<BigNumberish>;
     name: PromiseOrValue<string>;
     description: PromiseOrValue<string>;
     media: PromiseOrValue<string>;
@@ -42,6 +43,7 @@ export declare namespace InstiShop {
   };
 
   export type ItemStructOutput = [
+    BigNumber,
     string,
     string,
     string,
@@ -52,6 +54,7 @@ export declare namespace InstiShop {
     BigNumber,
     string
   ] & {
+    id: BigNumber;
     name: string;
     description: string;
     media: string;
@@ -71,7 +74,7 @@ export interface InstiShopInterface extends utils.Interface {
     "getItems()": FunctionFragment;
     "getItemsByOwner(address)": FunctionFragment;
     "getItemsByRenter(address)": FunctionFragment;
-    "idToItem(uint256)": FunctionFragment;
+    "items(uint256)": FunctionFragment;
     "rentItem(uint256,uint256)": FunctionFragment;
     "returnItem(uint256)": FunctionFragment;
   };
@@ -83,7 +86,7 @@ export interface InstiShopInterface extends utils.Interface {
       | "getItems"
       | "getItemsByOwner"
       | "getItemsByRenter"
-      | "idToItem"
+      | "items"
       | "rentItem"
       | "returnItem"
   ): FunctionFragment;
@@ -113,7 +116,7 @@ export interface InstiShopInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "idToItem",
+    functionFragment: "items",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -136,7 +139,7 @@ export interface InstiShopInterface extends utils.Interface {
     functionFragment: "getItemsByRenter",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "idToItem", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "items", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "rentItem", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "returnItem", data: BytesLike): Result;
 
@@ -221,18 +224,27 @@ export interface InstiShop extends BaseContract {
     getItemsByOwner(
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[InstiShop.ItemStructOutput[]]>;
+    ): Promise<
+      [InstiShop.ItemStructOutput[]] & {
+        ownerItems: InstiShop.ItemStructOutput[];
+      }
+    >;
 
     getItemsByRenter(
       renter: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[InstiShop.ItemStructOutput[]]>;
+    ): Promise<
+      [InstiShop.ItemStructOutput[]] & {
+        renterItems: InstiShop.ItemStructOutput[];
+      }
+    >;
 
-    idToItem(
+    items(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [
+        BigNumber,
         string,
         string,
         string,
@@ -243,6 +255,7 @@ export interface InstiShop extends BaseContract {
         BigNumber,
         string
       ] & {
+        id: BigNumber;
         name: string;
         description: string;
         media: string;
@@ -294,11 +307,12 @@ export interface InstiShop extends BaseContract {
     overrides?: CallOverrides
   ): Promise<InstiShop.ItemStructOutput[]>;
 
-  idToItem(
+  items(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<
     [
+      BigNumber,
       string,
       string,
       string,
@@ -309,6 +323,7 @@ export interface InstiShop extends BaseContract {
       BigNumber,
       string
     ] & {
+      id: BigNumber;
       name: string;
       description: string;
       media: string;
@@ -360,11 +375,12 @@ export interface InstiShop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<InstiShop.ItemStructOutput[]>;
 
-    idToItem(
+    items(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [
+        BigNumber,
         string,
         string,
         string,
@@ -375,6 +391,7 @@ export interface InstiShop extends BaseContract {
         BigNumber,
         string
       ] & {
+        id: BigNumber;
         name: string;
         description: string;
         media: string;
@@ -447,7 +464,7 @@ export interface InstiShop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    idToItem(
+    items(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -492,7 +509,7 @@ export interface InstiShop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    idToItem(
+    items(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
